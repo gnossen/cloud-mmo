@@ -14,6 +14,9 @@ class Camera:
     def move_to(self, position):
         self._position = position
 
+    def center_on(self, pos):
+        self.move_to(pos - 0.5 * self._size)
+
     def translate(self, delta):
         self._position += delta
 

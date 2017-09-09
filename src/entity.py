@@ -6,10 +6,13 @@ import bounds
 class Entity:
     def __init__(self, size, position):
         self._size = size
-        self._position = position
+        self._position = position.astype(float)
 
     def move_to(self, position):
-        self._position = position
+        self._position = position.astype(float)
+
+    def center(self):
+        return self._position + 0.5 * self._size
 
     def translate(self, delta):
         self._position += delta
@@ -41,5 +44,24 @@ class DevEntity(Entity):
                          (screen_pos[0], screen_pos[1], self._size[0], self._size[0]),
                          0)
 
-    def update(self, events):
-        pass
+    def update(self, elapsed_time, keys):
+        raise Exception("Abstract method! What the hell are you doing?")
+
+class PlayerEntity(DevEntity):
+    def __init__(self, position):
+        super().__init__((63, 127, 255), np.array([30, 30]), position)
+
+    def update(self, elapsed_time, frame_duration, keys):
+        direction = np.array([0.0, 0.0])
+        if keys[pygame.K_UP]:
+            direction += np.array([0.0, -1.0])
+        if keys[pygame.K_DOWN]:
+            direction += np.array([0.0, 1.0])
+        if keys[pygame.K_LEFT]:
+            direction += np.array([-1.0, 0.0])
+        if keys[pygame.K_RIGHT]:
+            direction += np.array([1.0, 0.0])
+        if not (direction[0] == 0.0 and direction[1] == 0.0):
+            direction = (1.0 / np.linalg.norm(direction)) * direction
+        delta = 90.0 * frame_duration * direction
+        self.translate(delta)
