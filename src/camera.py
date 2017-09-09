@@ -21,7 +21,7 @@ class Camera:
         self._screen.fill((0, 0, 0))
 
     def position(self):
-        return self._position
+        return self._position.astype(int)
 
     def bounds(self):
         return bounds.Bounds(self.position(), self._size)
