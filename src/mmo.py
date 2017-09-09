@@ -8,7 +8,6 @@ while True:
         if event.type == pygame.QUIT:
             sys.exit(0)
 
-
     screen.fill((0, 0, 0))
     pygame.draw.rect(screen, (0, 0, 255), (0, 0, 20, 20), 0)
     pygame.display.flip()
