@@ -38,10 +38,10 @@ class TileMap:
     def blit(self, camera):
         camera_bounds = camera.bounds()
         def set_tile(x, y):
-            tile_pos = camera.position() + self._tile_size * np.array([x, y])
+            tile_pos = self._tile_size * np.array([x, y])
             tile_bounds = bounds.Bounds(tile_pos, np.array([self._tile_size, self._tile_size]))
             if camera_bounds.intersects(tile_bounds):
-                self._tiles[x][y].blit(camera.screen(), tile_pos)
+                self._tiles[x][y].blit(camera.screen(), tile_pos - camera.position())
 
         self._iter_map(set_tile)
 

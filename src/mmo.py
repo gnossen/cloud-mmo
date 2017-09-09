@@ -4,6 +4,7 @@ import tile
 import numpy as np
 import camera
 import time
+import entity
 
 class timed_loop:
     def __init__(self, fps):
@@ -20,19 +21,23 @@ class timed_loop:
             time.sleep(max(0, desired_period - elapsed_time))
 
 cam = camera.Camera(np.array([400, 400]))
-
-tilemap = tile.DevTileMap(np.array([15, 15]))
+tilemap = tile.DevTileMap(np.array([10, 10]))
+player = entity.DevEntity((63, 127, 255), np.array([30, 30]), np.array([30, 30]))
 
 @timed_loop(60.0)
 def main(elapsed_time):
-    for event in pygame.event.get():
+    events = pygame.event.get()
+    for event in events:
         if event.type == pygame.QUIT:
             sys.exit(0)
 
-    cam.move_to(elapsed_time * np.array([-10.0, 0]))
+    cam.move_to(elapsed_time * np.array([-10.0, -10.0]))
+    player.move_to(elapsed_time * np.array([10.0, 0.0]))
+    player.update(events)
 
     cam.reset()
     tilemap.blit(cam)
+    player.blit(cam)
     pygame.display.flip()
 
 main()

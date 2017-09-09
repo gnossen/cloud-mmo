@@ -3,10 +3,10 @@
     - Images (later)
 x Implement Camera
     x Programmatic Interface
-- Provide Stable Framerate
-- Implement Objects
-    - Blit at arbitrary location
-    - Programmatic Movement controls
+x Provide Stable Framerate
+x Implement Objects
+    x Blit at arbitrary location
+    x Programmatic Movement controls
     - User Interface to Movement controls
     - Hook player movement up to Camera
 - Determine Other Mechanics
