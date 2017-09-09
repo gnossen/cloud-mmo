@@ -1,5 +1,5 @@
 - Implement tilemaps
-    - Solid Colors
+    x Solid Colors
     - Images (later)
 - Implement Camera
     - Programmatic Interface
