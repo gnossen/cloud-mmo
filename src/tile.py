@@ -1,5 +1,6 @@
 import numpy as np
 import pygame
+import bounds
 
 class Tile:
     def __init__(self, kind=0, tile_size=32):
@@ -17,7 +18,6 @@ class Tile:
             return (0, 255, 0)
 
     def blit(self, screen, screen_pos):
-        print("Color: {}".format(self._color()))
         pygame.draw.rect(screen,
                          self._color(),
                          (screen_pos[0], screen_pos[1], self._tile_size, self._tile_size),
@@ -35,11 +35,13 @@ class TileMap:
             raise TypeError(msg)
         self._tiles[position[0]][position[1]] = tile
 
-    def blit(self, screen):
-        base_pos = np.array([0, 0])
+    def blit(self, camera):
+        camera_bounds = camera.bounds()
         def set_tile(x, y):
-            tile_pos = base_pos + self._tile_size * np.array([x, y])
-            self._tiles[x][y].blit(screen, tile_pos)
+            tile_pos = camera.position() + self._tile_size * np.array([x, y])
+            tile_bounds = bounds.Bounds(tile_pos, np.array([self._tile_size, self._tile_size]))
+            if camera_bounds.intersects(tile_bounds):
+                self._tiles[x][y].blit(camera.screen(), tile_pos)
 
         self._iter_map(set_tile)
 

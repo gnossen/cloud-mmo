@@ -1,9 +1,9 @@
 - Implement tilemaps
     x Solid Colors
     - Images (later)
-- Implement Camera
-    - Programmatic Interface
-    - User Interface (?)
+x Implement Camera
+    x Programmatic Interface
+- Provide Stable Framerate
 - Implement Objects
     - Blit at arbitrary location
     - Programmatic Movement controls
