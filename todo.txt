@@ -7,8 +7,13 @@ x Provide Stable Framerate
 x Implement Objects
     x Blit at arbitrary location
     x Programmatic Movement controls
-    - User Interface to Movement controls
-    - Hook player movement up to Camera
+    x User Interface to Movement controls
+    x Hook player movement up to Camera
+x Add other random NPCs
+- Make NPCs move randomly
+- Add sword entity (axis-aligned rectangle only)
+- Implement damage
+- Game Updates in a Functional Style
 - Determine Other Mechanics
 - Add Networking
 - Map Generation

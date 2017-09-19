@@ -5,6 +5,7 @@ import numpy as np
 import camera
 import time
 import entity
+import random
 
 class timed_loop:
     def __init__(self, fps):
@@ -25,6 +26,12 @@ cam = camera.Camera(np.array([400, 400]))
 tilemap = tile.DevTileMap(np.array([10, 10]))
 player = entity.PlayerEntity(np.array([30, 30]))
 
+npcs = []
+for _ in range(7):
+    position = np.array([random.randrange(320), random.randrange(320)])
+    npc = entity.NpcEntity(position)
+    npcs.append(npc)
+
 keys = [False for _ in range(512)]
 @timed_loop(60.0)
 def main(elapsed_time, frame_duration):
@@ -43,6 +50,8 @@ def main(elapsed_time, frame_duration):
     cam.reset()
     tilemap.blit(cam)
     player.blit(cam)
+    for npc in npcs:
+        npc.blit(cam)
     pygame.display.flip()
 
 main()

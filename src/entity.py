@@ -2,6 +2,7 @@ import numpy as np
 import pygame
 import camera
 import bounds
+import random
 
 class Entity:
     def __init__(self, size, position):
@@ -46,6 +47,12 @@ class DevEntity(Entity):
 
     def update(self, elapsed_time, keys):
         raise Exception("Abstract method! What the hell are you doing?")
+
+class NpcEntity(DevEntity):
+    def __init__(self, position):
+        color = np.array([random.randrange(256), random.randrange(256), random.randrange(256)])
+        size = np.array([30, 30])
+        super().__init__(color, size, position)
 
 class PlayerEntity(DevEntity):
     def __init__(self, position):
