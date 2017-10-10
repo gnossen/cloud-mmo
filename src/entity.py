@@ -95,6 +95,7 @@ class PlayerEntity(DevEntity):
         super().__init__((63, 127, 255), np.array([30, 30]), position)
         self._keys = [False] * len(self.ARROW_KEYS)
         self._direction = self.DIRECTIONS[1]
+        self._sword_entity = None
 
     def _update_arrow_key(self, event, event_type, key_state):
         if event.type == event_type:
@@ -108,6 +109,12 @@ class PlayerEntity(DevEntity):
             if len([elem for elem in self._keys if elem]) == 1:
                 dir_index = self._keys.index(True)
                 self._direction = self.DIRECTIONS[dir_index]
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                if not self._sword_entity:
+                    self._instantiate_sword()
+
+    def _instantiate_sword(self):
+        self._sword_entity = SwordEntity(self.center() + 20 * self._direction)
 
     def _move(self, frame_duration):
         direction = np.array([0.0, 0.0])
@@ -119,6 +126,30 @@ class PlayerEntity(DevEntity):
         delta = 90.0 * frame_duration * direction
         self.translate(delta)
 
+    def blit(self, camera):
+        super().blit(camera)
+        if self._sword_entity is not None:
+            self._sword_entity.blit(camera)
+
     def update(self, elapsed_time, frame_duration, events):
+        if self._sword_entity is not None and self._sword_entity.dead():
+            print("Killing sword")
+            self._sword_entity = None
         self._update_keys(events)
-        self._move(frame_duration)
+        if not self._sword_entity:
+            self._move(frame_duration)
+        if self._sword_entity is not None:
+            self._sword_entity.update(elapsed_time, frame_duration, events)
+
+class SwordEntity(DevEntity):
+    SIZE = np.array([10, 10])
+    def __init__(self, position):
+        print("Instantiating sword")
+        super().__init__((255, 255, 255), SwordEntity.SIZE, position - 0.5 * SwordEntity.SIZE)
+        self._lifetime = 0.5
+
+    def update(self, elapsed_time, frame_duration, events):
+        self._lifetime -= frame_duration
+
+    def dead(self):
+        return self._lifetime <= 0.0
