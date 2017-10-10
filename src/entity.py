@@ -42,7 +42,7 @@ class DevEntity(Entity):
         screen_pos = self._position - camera.position()
         pygame.draw.rect(camera.screen(),
                          self._color,
-                         (screen_pos[0], screen_pos[1], self._size[0], self._size[0]),
+                         (screen_pos[0], screen_pos[1], self._size[0], self._size[1]),
                          0)
 
     def update(self, elapsed_time, keys):
@@ -114,7 +114,7 @@ class PlayerEntity(DevEntity):
                     self._instantiate_sword()
 
     def _instantiate_sword(self):
-        self._sword_entity = SwordEntity(self.center() + 20 * self._direction)
+        self._sword_entity = SwordEntity(self.center() + 20 * self._direction, self._direction)
 
     def _move(self, frame_duration):
         direction = np.array([0.0, 0.0])
@@ -142,10 +142,15 @@ class PlayerEntity(DevEntity):
             self._sword_entity.update(elapsed_time, frame_duration, events)
 
 class SwordEntity(DevEntity):
-    SIZE = np.array([10, 10])
-    def __init__(self, position):
+    def __init__(self, position, direction):
         print("Instantiating sword")
-        super().__init__((255, 255, 255), SwordEntity.SIZE, position - 0.5 * SwordEntity.SIZE)
+        size = None
+        if direction[0] == 0.0:
+            size = np.array([10, 25])
+        else:
+            size = np.array([25, 10])
+        print("Size is {}".format(size))
+        super().__init__((255, 255, 255), size, position - 0.5 * size)
         self._lifetime = 0.5
 
     def update(self, elapsed_time, frame_duration, events):
