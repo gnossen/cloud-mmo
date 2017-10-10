@@ -94,15 +94,20 @@ class PlayerEntity(DevEntity):
     def __init__(self, position):
         super().__init__((63, 127, 255), np.array([30, 30]), position)
         self._keys = [False] * len(self.ARROW_KEYS)
+        self._direction = self.DIRECTIONS[1]
+
+    def _update_arrow_key(self, event, event_type, key_state):
+        if event.type == event_type:
+            if event.key in self.ARROW_KEYS:
+                self._keys[self.ARROW_KEYS.index(event.key)] = key_state
 
     def _update_keys(self, events):
         for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key in self.ARROW_KEYS:
-                    self._keys[self.ARROW_KEYS.index(event.key)] = True
-            elif event.type == pygame.KEYUP:
-                if event.key in self.ARROW_KEYS:
-                    self._keys[self.ARROW_KEYS.index(event.key)] = False
+            self._update_arrow_key(event, pygame.KEYDOWN, True)
+            self._update_arrow_key(event, pygame.KEYUP, False)
+            if len([elem for elem in self._keys if elem]) == 1:
+                dir_index = self._keys.index(True)
+                self._direction = self.DIRECTIONS[dir_index]
 
     def _move(self, frame_duration):
         direction = np.array([0.0, 0.0])
