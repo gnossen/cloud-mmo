@@ -84,6 +84,12 @@ class NpcEntity(DevEntity):
 
 class PlayerEntity(DevEntity):
     ARROW_KEYS = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]
+    DIRECTIONS = [
+        np.array([0.0, -1.0]),
+        np.array([0.0, 1.0]),
+        np.array([-1.0, 0.0]),
+        np.array([1.0, 0.0])
+    ]
 
     def __init__(self, position):
         super().__init__((63, 127, 255), np.array([30, 30]), position)
@@ -100,14 +106,9 @@ class PlayerEntity(DevEntity):
 
     def _move(self, frame_duration):
         direction = np.array([0.0, 0.0])
-        if self._keys[0]:
-            direction += np.array([0.0, -1.0])
-        if self._keys[1]:
-            direction += np.array([0.0, 1.0])
-        if self._keys[2]:
-            direction += np.array([-1.0, 0.0])
-        if self._keys[3]:
-            direction += np.array([1.0, 0.0])
+        for key, card_dir in zip(self._keys, self.DIRECTIONS):
+            if key:
+                direction += card_dir
         if not (direction[0] == 0.0 and direction[1] == 0.0):
             direction = (1.0 / np.linalg.norm(direction)) * direction
         delta = 90.0 * frame_duration * direction
