@@ -49,26 +49,70 @@ class DevEntity(Entity):
         raise Exception("Abstract method! What the hell are you doing?")
 
 class NpcEntity(DevEntity):
+    DIRECTIONS = [
+        np.array([0.0, 0.0]),
+        np.array([0.0, 0.0]),
+        np.array([0.0, 0.0]),
+        np.array([0.0, 0.0]),
+        np.array([0.0, 0.0]),
+        np.array([0.0, -1.0]),
+        np.array([0.0, 1.0]),
+        np.array([-1.0, 0.0]),
+        np.array([1.0, 0.0])
+    ]
+
     def __init__(self, position):
         color = np.array([random.randrange(256), random.randrange(256), random.randrange(256)])
         size = np.array([30, 30])
         super().__init__(color, size, position)
+        self._direction = self.DIRECTIONS[0]
+        self._move_duration = 0.0
+
+    def _start_moving(self):
+        self._direction = random.choice(self.DIRECTIONS)
+        self._move_duration = random.gauss(3.0, 1.0)
+
+    def _move(self, frame_duration):
+        delta = 40.0 * frame_duration * self._direction
+        self.translate(delta)
+
+    def update(self, elapsed_time, frame_duration, events):
+        if self._move_duration < 0:
+            self._start_moving()
+        self._move(frame_duration)
+        self._move_duration -= frame_duration
 
 class PlayerEntity(DevEntity):
+    ARROW_KEYS = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]
+
     def __init__(self, position):
         super().__init__((63, 127, 255), np.array([30, 30]), position)
+        self._keys = [False] * len(self.ARROW_KEYS)
 
-    def update(self, elapsed_time, frame_duration, keys):
+    def _update_keys(self, events):
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key in self.ARROW_KEYS:
+                    self._keys[self.ARROW_KEYS.index(event.key)] = True
+            elif event.type == pygame.KEYUP:
+                if event.key in self.ARROW_KEYS:
+                    self._keys[self.ARROW_KEYS.index(event.key)] = False
+
+    def _move(self, frame_duration):
         direction = np.array([0.0, 0.0])
-        if keys[pygame.K_UP]:
+        if self._keys[0]:
             direction += np.array([0.0, -1.0])
-        if keys[pygame.K_DOWN]:
+        if self._keys[1]:
             direction += np.array([0.0, 1.0])
-        if keys[pygame.K_LEFT]:
+        if self._keys[2]:
             direction += np.array([-1.0, 0.0])
-        if keys[pygame.K_RIGHT]:
+        if self._keys[3]:
             direction += np.array([1.0, 0.0])
         if not (direction[0] == 0.0 and direction[1] == 0.0):
             direction = (1.0 / np.linalg.norm(direction)) * direction
         delta = 90.0 * frame_duration * direction
         self.translate(delta)
+
+    def update(self, elapsed_time, frame_duration, events):
+        self._update_keys(events)
+        self._move(frame_duration)

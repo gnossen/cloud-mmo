@@ -10,9 +10,10 @@ x Implement Objects
     x User Interface to Movement controls
     x Hook player movement up to Camera
 x Add other random NPCs
-- Make NPCs move randomly
+x Make NPCs move randomly
 - Add sword entity (axis-aligned rectangle only)
 - Implement damage
+- Implement collision detection
 - Game Updates in a Functional Style
 - Determine Other Mechanics
 - Add Networking

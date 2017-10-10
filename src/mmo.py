@@ -23,7 +23,7 @@ class timed_loop:
             time.sleep(max(0, desired_period - elapsed_time))
 
 cam = camera.Camera(np.array([400, 400]))
-tilemap = tile.DevTileMap(np.array([10, 10]))
+tilemap = tile.DevTileMap(np.array([20, 20]))
 player = entity.PlayerEntity(np.array([30, 30]))
 
 npcs = []
@@ -39,18 +39,15 @@ def main(elapsed_time, frame_duration):
     for event in events:
         if event.type == pygame.QUIT:
             sys.exit(0)
-        elif event.type == pygame.KEYDOWN:
-            keys[event.key] = True
-        elif event.type == pygame.KEYUP:
-            keys[event.key] = False
 
-    player.update(elapsed_time, frame_duration, keys)
+    player.update(elapsed_time, frame_duration, events)
     cam.center_on(player.center())
 
     cam.reset()
     tilemap.blit(cam)
     player.blit(cam)
     for npc in npcs:
+        npc.update(elapsed_time, frame_duration, events)
         npc.blit(cam)
     pygame.display.flip()
 
