@@ -133,7 +133,6 @@ class PlayerEntity(DevEntity):
 
     def update(self, elapsed_time, frame_duration, events):
         if self._sword_entity is not None and self._sword_entity.dead():
-            print("Killing sword")
             self._sword_entity = None
         self._update_keys(events)
         if not self._sword_entity:
@@ -143,13 +142,11 @@ class PlayerEntity(DevEntity):
 
 class SwordEntity(DevEntity):
     def __init__(self, position, direction):
-        print("Instantiating sword")
         size = None
         if direction[0] == 0.0:
             size = np.array([10, 25])
         else:
             size = np.array([25, 10])
-        print("Size is {}".format(size))
         super().__init__((255, 255, 255), size, position - 0.5 * size)
         self._lifetime = 0.5
 

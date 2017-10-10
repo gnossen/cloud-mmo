@@ -11,7 +11,8 @@ x Implement Objects
     x Hook player movement up to Camera
 x Add other random NPCs
 x Make NPCs move randomly
-- Add sword entity (axis-aligned rectangle only)
+x Add sword entity (axis-aligned rectangle only)
+- Implement child entities
 - Implement damage
 - Implement collision detection
 - Game Updates in a Functional Style

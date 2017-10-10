@@ -45,10 +45,10 @@ def main(elapsed_time, frame_duration):
 
     cam.reset()
     tilemap.blit(cam)
-    player.blit(cam)
     for npc in npcs:
         npc.update(elapsed_time, frame_duration, events)
         npc.blit(cam)
+    player.blit(cam)
     pygame.display.flip()
 
 main()
