@@ -22,7 +22,7 @@ class timed_loop:
             frame_duration = time.time() - frame_start
             time.sleep(max(0, desired_period - elapsed_time))
 
-cam = camera.Camera(np.array([400, 400]))
+cam = camera.Camera(np.array([800, 800]))
 tilemap = tile.DevTileMap(np.array([20, 20]))
 player = entity.PlayerEntity(np.array([30, 30]))
 
