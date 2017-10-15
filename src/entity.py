@@ -49,10 +49,10 @@ class DevEntity(Entity):
         raise Exception("Abstract method! What the hell are you doing?")
 
 CARDINAL_DIRECTIONS = {
-        "down": np.array([0.0, -1.0]),
-        "up": np.array([0.0, 1.0]),
+        "down": np.array([0.0, 1.0]),
+        "up": np.array([0.0, -1.0]),
         "right": np.array([1.0, 0.0]),
-        "left": np.array([0.0, 0.0]),
+        "left": np.array([-1.0, 0.0]),
 }
 
 class NpcEntity(DevEntity):
@@ -80,47 +80,77 @@ class NpcEntity(DevEntity):
         self._move(frame_duration)
         self._move_duration -= frame_duration
 
-class PlayerEntity(DevEntity):
-    ARROW_KEYS = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]
-    DIRECTIONS = [
-        np.array([0.0, -1.0]),
-        np.array([0.0, 1.0]),
-        np.array([-1.0, 0.0]),
-        np.array([1.0, 0.0])
-    ]
+class KeyState:
+    def __init__(self, key_codes):
+        self._key_codes = key_codes
+        self._key_states = [False] * len(key_codes)
 
-    def __init__(self, position):
-        super().__init__((63, 127, 255), np.array([30, 30]), position)
-        self._keys = [False] * len(self.ARROW_KEYS)
-        self._direction = CARDINAL_DIRECTIONS["down"]
-        self._sword_entity = None
+    def state(self, key_code):
+        return self._key_states[self._key_codes.index(key_code)]
+
+    def update(self, events):
+        for event in events:
+            self._update(event)
+
+    def _update(self, event):
+        self._update_arrow_key(event, pygame.KEYDOWN, True)
+        self._update_arrow_key(event, pygame.KEYUP, False)
 
     def _update_arrow_key(self, event, event_type, key_state):
-        if event.type == event_type:
-            if event.key in self.ARROW_KEYS:
-                self._keys[self.ARROW_KEYS.index(event.key)] = key_state
+        if event.type == event_type and event.key in self.PYGAME_DIRECTIONS:
+            self._key_states[self._key_codes.index(event.key)] = key_state
+
+class DirectionKeyState(KeyState):
+    PYGAME_DIRECTIONS = {
+        pygame.K_UP: "up",
+        pygame.K_DOWN: "down",
+        pygame.K_LEFT: "left",
+        pygame.K_RIGHT: "right"
+    }
+
+    def __init__(self):
+        self._facing_direction = CARDINAL_DIRECTIONS["down"]
+        super().__init__(list(self.PYGAME_DIRECTIONS.keys()))
+
+    def _update(self, event):
+        super()._update(event)
+        if len([elem for elem in self._key_states if elem]) == 1:
+            dir_index = self._key_states.index(True)
+            dir_code = self._key_codes[dir_index]
+            self._facing_direction = CARDINAL_DIRECTIONS[self.PYGAME_DIRECTIONS[dir_code]]
+
+    def facing_direction(self):
+        return self._facing_direction
+
+    def movement_direction(self):
+        d = np.array([0.0, 0.0])
+        for key, dir_name in self.PYGAME_DIRECTIONS.items():
+            dir_vec = CARDINAL_DIRECTIONS[dir_name]
+            if self.state(key):
+                d += dir_vec
+        if not (d[0] == 0.0 and d[1] == 0.0):
+            d = (1.0 / np.linalg.norm(d)) * d
+        return d
+
+class PlayerEntity(DevEntity):
+    def __init__(self, position):
+        super().__init__((63, 127, 255), np.array([30, 30]), position)
+        self._dir_key_state = DirectionKeyState()
+        self._sword_entity = None
 
     def _update_keys(self, events):
+        self._dir_key_state.update(events)
         for event in events:
-            self._update_arrow_key(event, pygame.KEYDOWN, True)
-            self._update_arrow_key(event, pygame.KEYUP, False)
-            if len([elem for elem in self._keys if elem]) == 1:
-                dir_index = self._keys.index(True)
-                self._direction = self.DIRECTIONS[dir_index]
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 if not self._sword_entity:
                     self._instantiate_sword()
 
     def _instantiate_sword(self):
-        self._sword_entity = SwordEntity(self.center() + 20 * self._direction, self._direction)
+        facing_direction = self._dir_key_state.facing_direction()
+        self._sword_entity = SwordEntity(self.center() + 20 * facing_direction, facing_direction)
 
     def _move(self, frame_duration):
-        direction = np.array([0.0, 0.0])
-        for key, card_dir in zip(self._keys, self.DIRECTIONS):
-            if key:
-                direction += card_dir
-        if not (direction[0] == 0.0 and direction[1] == 0.0):
-            direction = (1.0 / np.linalg.norm(direction)) * direction
+        direction = self._dir_key_state.movement_direction()
         delta = 90.0 * frame_duration * direction
         self.translate(delta)
 
