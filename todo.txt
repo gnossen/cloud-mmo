@@ -12,7 +12,7 @@ x Implement Objects
 x Add other random NPCs
 x Make NPCs move randomly
 x Add sword entity (axis-aligned rectangle only)
-- Implement child entities
+- Refine Actor / Entity System
 - Implement damage
 - Implement collision detection
 - Game Updates in a Functional Style
