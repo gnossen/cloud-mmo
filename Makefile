@@ -1,32 +1,35 @@
-SHELL := /bin/bash
+SHELL 	:= /bin/bash
+PYTHON 	:= python3.5
+PIP		:= pip3.5
+
 .PHONY: run
 run:
-	python src/mmo.py
+	$(PYTHON) src/mmo.py
 
 venv: test-requirements.lock
-	virtualenv -p /usr/bin/python3 venv
+	virtualenv -p $(PYTHON) venv
 	source venv/bin/activate
-	pip install -r test-requirements.lock
+	$(PIP) install -r test-requirements.lock
 
 .ONESHELL:
 test-requirements.lock: test-requirements.txt requirements.lock
 	rm -rf .autovenv
-	virtualenv -p /usr/bin/python3 .autovenv
+	virtualenv -p $(PYTHON) .autovenv
 	source .autovenv/bin/activate
-	pip3 install -r test-requirements.txt
-	pip3 freeze > test-requirements.lock
+	$(PIP) install -r test-requirements.txt
+	$(PIP) freeze > test-requirements.lock
 
 .ONESHELL:
 requirements.lock: requirements.txt
 	rm -rf .autovenv
-	virtualenv -p /usr/bin/python3 .autovenv
+	virtualenv -p $(PYTHON) .autovenv
 	source .autovenv/bin/activate
-	pip3 install -r requirements.txt
-	pip3 freeze > requirements.lock
+	$(PIP) install -r requirements.txt
+	$(PIP) freeze > requirements.lock
 
 .PHONY: test
 test:
-	PYTHONPATH=src py.test test
+	PYTHONPATH=src $(PYTHON) -m pytest test
 
 .PHONY: requirements
 requirements: venv
