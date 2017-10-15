@@ -48,28 +48,26 @@ class DevEntity(Entity):
     def update(self, elapsed_time, keys):
         raise Exception("Abstract method! What the hell are you doing?")
 
-class NpcEntity(DevEntity):
-    DIRECTIONS = [
-        np.array([0.0, 0.0]),
-        np.array([0.0, 0.0]),
-        np.array([0.0, 0.0]),
-        np.array([0.0, 0.0]),
-        np.array([0.0, 0.0]),
-        np.array([0.0, -1.0]),
-        np.array([0.0, 1.0]),
-        np.array([-1.0, 0.0]),
-        np.array([1.0, 0.0])
-    ]
+CARDINAL_DIRECTIONS = {
+        "down": np.array([0.0, -1.0]),
+        "up": np.array([0.0, 1.0]),
+        "right": np.array([1.0, 0.0]),
+        "left": np.array([0.0, 0.0]),
+}
 
+class NpcEntity(DevEntity):
     def __init__(self, position):
         color = np.array([random.randrange(256), random.randrange(256), random.randrange(256)])
         size = np.array([30, 30])
         super().__init__(color, size, position)
-        self._direction = self.DIRECTIONS[0]
+        self._direction = CARDINAL_DIRECTIONS["down"]
         self._move_duration = 0.0
 
+    def _possible_directions(self):
+        return list(CARDINAL_DIRECTIONS.values()) + ([np.array([0.0, 0.0])] * 5)
+
     def _start_moving(self):
-        self._direction = random.choice(self.DIRECTIONS)
+        self._direction = random.choice(self._possible_directions())
         self._move_duration = random.gauss(3.0, 1.0)
 
     def _move(self, frame_duration):
@@ -94,7 +92,7 @@ class PlayerEntity(DevEntity):
     def __init__(self, position):
         super().__init__((63, 127, 255), np.array([30, 30]), position)
         self._keys = [False] * len(self.ARROW_KEYS)
-        self._direction = self.DIRECTIONS[1]
+        self._direction = CARDINAL_DIRECTIONS["down"]
         self._sword_entity = None
 
     def _update_arrow_key(self, event, event_type, key_state):
