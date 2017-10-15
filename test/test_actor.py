@@ -3,8 +3,12 @@ from concurrent.futures import ThreadPoolExecutor
 import pytest
 
 class PrintActor(Actor):
+    def __init__(self, parent, executor):
+        self._message = None
+        super().__init__(parent, executor)
+
     def receive(self, message, sender):
-        print(message)
+        self._message = message
 
 class PassAlongActor(Actor):
     def __init__(self, target, parent, executor):
@@ -32,18 +36,16 @@ class AskActor(Actor):
 def test_executor():
     return ThreadPoolExecutor(max_workers=4)
 
-def test_send(test_executor, capsys):
+def test_receive(test_executor, capsys):
     a = PrintActor(None, executor=test_executor)
     a.receive("stuff", None)
-    out, _ = capsys.readouterr()
-    assert out == "stuff\n"
+    assert a._message == "stuff"
 
-def test_send_actor_to_actor(test_executor, capsys):
+def test_send(test_executor, capsys):
     print_actor = PrintActor(None, executor=test_executor)
     pass_along = PassAlongActor(print_actor, None, executor=test_executor)
     pass_along.receive("hello", None)
-    out, _ = capsys.readouterr()
-    assert out == "hello\n"
+    assert print_actor._message == "hello"
 
 def test_ask(test_executor):
     for i in range(10000):
