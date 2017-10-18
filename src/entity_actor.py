@@ -39,7 +39,7 @@ class PlayerActor(Actor):
     def __init__(self, parent, position, executor=None):
         self._entity = PlayerEntity(position)
         self._dir_key_state = DirectionKeyState()
-        self._sword_entity = None
+        self._sword = None
         super().__init__(parent, executor=executor)
 
     def receive(self, msg, sender):
@@ -48,26 +48,26 @@ class PlayerActor(Actor):
         elif isinstance(msg, BlitMessage):
             msg.camera.center_on(self._entity.center())
             self._entity.blit(msg.camera)
-            if self._sword_entity:
-                self._sword_entity.blit(msg.camera)
+            if self._sword:
+                self.send(msg, self._sword)
         elif isinstance(msg, KeyEventMessage):
             self._update_keys(msg)
 
     def _update_sword(self, update_msg):
-        if self._sword_entity is not None and self._sword_entity.dead():
-            self._sword_entity = None
-        if self._sword_entity is not None:
-            self._sword_entity.update(update_msg.elapsed_time, update_msg.frame_duration)
+        if self._sword is not None and self._sword.dead():
+            self._sword = None
+        if self._sword is not None:
+            self.send(update_msg, self._sword)
 
     def _update_keys(self, msg):
         self._dir_key_state.update(msg.event)
         if msg.event.type == pygame.KEYDOWN and msg.event.key == pygame.K_SPACE:
-            if not self._sword_entity:
+            if not self._sword:
                 self._instantiate_sword()
 
     def _instantiate_sword(self):
         facing_direction = self._dir_key_state.facing_direction()
-        self._sword_entity = SwordEntity(self._entity.center() + 20 * facing_direction, facing_direction)
+        self._sword = SwordActor(self, self._entity.center() + 20 * facing_direction, facing_direction)
 
     def _move(self, frame_duration):
         direction = self._dir_key_state.movement_direction()
@@ -76,5 +76,23 @@ class PlayerActor(Actor):
 
     def update(self, update_msg):
         self._update_sword(update_msg)
-        if not self._sword_entity:
+        if not self._sword:
             self._move(update_msg.frame_duration)
+
+class SwordActor(Actor):
+    def __init__(self, parent, position, direction, executor=None):
+        self._entity = SwordEntity(position, direction)
+        self._lifetime = 0.5
+        super().__init__(parent, executor=executor)
+
+    def receive(self, msg, sender):
+        if isinstance(msg, UpdateMessage):
+            self.update(msg)
+        elif isinstance(msg, BlitMessage):
+            self._entity.blit(msg.camera)
+
+    def update(self, msg):
+        self._lifetime -= msg.frame_duration
+
+    def dead(self):
+        return self._lifetime <= 0.0
