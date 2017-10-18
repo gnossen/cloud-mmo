@@ -13,6 +13,11 @@ x Add other random NPCs
 x Make NPCs move randomly
 x Add sword entity (axis-aligned rectangle only)
 - Refine Actor / Entity System
+    - Implement Root Actor
+    - Implement NPC Actor
+    - Implement Player Actor
+    - Implement Sword Actor
+    - Anything else that needs to be switched over
 - Implement damage
 - Implement collision detection
 - Game Updates in a Functional Style

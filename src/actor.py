@@ -6,6 +6,8 @@ class Actor(object):
     def __init__(self, parent: 'Actor', executor: futures.Executor = None) -> None:
         self._executor = parent._executor if executor is None else executor
         self._parent = parent
+        if parent is not None:
+            parent.add_child(self)
         self._children = []
         self._resp_cond = None
         self._resp = None
@@ -29,3 +31,6 @@ class Actor(object):
 
     def add_child(self, child: 'Actor') -> None:
         self._children.append(child)
+
+    def await(self, fut: 'Future'):
+        return self._executor.submit(fut)
