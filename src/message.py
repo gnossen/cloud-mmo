@@ -8,5 +8,5 @@ class BlitMessage:
         self.camera = camera
 
 class KeyEventMessage:
-    def __init__(self, pygame_event):
-        self.pygame_event = pygame_event
+    def __init__(self, event):
+        self.event = event

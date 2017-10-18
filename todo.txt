@@ -15,7 +15,7 @@ x Add sword entity (axis-aligned rectangle only)
 - Refine Actor / Entity System
     x Implement Root Actor
     x Implement NPC Actor
-    - Implement Player Actor
+    x Implement Player Actor
     - Implement Sword Actor
     - Anything else that needs to be switched over
 - Implement damage

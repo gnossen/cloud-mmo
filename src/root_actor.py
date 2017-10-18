@@ -12,10 +12,10 @@ from message import *
 class RootActor(Actor):
     def __init__(self, executor):
         super().__init__(None, executor)
-        # self._player = PlayerActor(self)
+        self._npcs = [NpcActor(self, np.array([random.randrange(320), random.randrange(320)])) for i in range(7)]
+        self._player = PlayerActor(self, np.array([30, 30]))
         self._camera = camera.Camera(np.array([800, 800]))
         self._tilemap = tile.DevTileMap(np.array([20, 20]))
-        self._npcs = [NpcActor(self, np.array([random.randrange(320), random.randrange(320)])) for i in range(7)]
 
     def receive(self, message, sender):
         if isinstance(message, UpdateMessage):
@@ -27,8 +27,7 @@ class RootActor(Actor):
         self.update_external()
         for child in self.children():
             self.await(self.send(update_msg, child))
-        # self._camera.center_on(player.center())
-        # self._camera.reset()
+        self._camera.reset()
 
     def update_external(self):
         events = pygame.event.get()
@@ -36,10 +35,10 @@ class RootActor(Actor):
             if event.type == pygame.QUIT:
                 sys.exit(0)
 
-        # for event in events:
-        #     msg = KeyEventMessage(event)
-        #     for child in self.children():
-        #         self.await(self.send(msg, child))
+        for event in events:
+            msg = KeyEventMessage(event)
+            for child in self.children():
+                self.await(self.send(msg, child))
 
     def blit(self):
         # how do we handle ordering of child entities for blitting?
