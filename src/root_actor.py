@@ -6,15 +6,16 @@ import entity
 import random
 import tile
 from actor import *
+from entity_actor import *
 from message import *
 
 class RootActor(Actor):
     def __init__(self, executor):
+        super().__init__(None, executor)
         # self._player = PlayerActor(self)
         self._camera = camera.Camera(np.array([800, 800]))
         self._tilemap = tile.DevTileMap(np.array([20, 20]))
-        # self._npcs = [NpcActor(self, np.array([np.randrange(320), np.randrange(320)])) for i in range(7)]
-        super().__init__(None, executor)
+        self._npcs = [NpcActor(self, np.array([random.randrange(320), random.randrange(320)])) for i in range(7)]
 
     def receive(self, message, sender):
         if isinstance(message, UpdateMessage):
@@ -24,8 +25,8 @@ class RootActor(Actor):
 
     def update(self, update_msg):
         self.update_external()
-        # for child in self.children():
-        #     self.await(self.send(update_msg, child))
+        for child in self.children():
+            self.await(self.send(update_msg, child))
         # self._camera.center_on(player.center())
         # self._camera.reset()
 
@@ -43,6 +44,6 @@ class RootActor(Actor):
     def blit(self):
         # how do we handle ordering of child entities for blitting?
         self._tilemap.blit(self._camera)
-        # for child in self.children():
-        #     self.await(self.send(BlitMessage(self._camera)))
+        for child in self.children():
+            self.await(self.send(BlitMessage(self._camera), child))
         pygame.display.flip()

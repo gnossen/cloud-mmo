@@ -3,6 +3,7 @@ import pygame
 import camera
 import bounds
 import random
+from directions import *
 
 class Entity:
     def __init__(self, size, position):
@@ -48,37 +49,11 @@ class DevEntity(Entity):
     def update(self, elapsed_time, keys):
         raise Exception("Abstract method! What the hell are you doing?")
 
-CARDINAL_DIRECTIONS = {
-        "down": np.array([0.0, 1.0]),
-        "up": np.array([0.0, -1.0]),
-        "right": np.array([1.0, 0.0]),
-        "left": np.array([-1.0, 0.0]),
-}
-
 class NpcEntity(DevEntity):
     def __init__(self, position):
         color = np.array([random.randrange(256), random.randrange(256), random.randrange(256)])
         size = np.array([30, 30])
         super().__init__(color, size, position)
-        self._direction = CARDINAL_DIRECTIONS["down"]
-        self._move_duration = 0.0
-
-    def _possible_directions(self):
-        return list(CARDINAL_DIRECTIONS.values()) + ([np.array([0.0, 0.0])] * 5)
-
-    def _start_moving(self):
-        self._direction = random.choice(self._possible_directions())
-        self._move_duration = random.gauss(3.0, 1.0)
-
-    def _move(self, frame_duration):
-        delta = 40.0 * frame_duration * self._direction
-        self.translate(delta)
-
-    def update(self, elapsed_time, frame_duration, events):
-        if self._move_duration < 0:
-            self._start_moving()
-        self._move(frame_duration)
-        self._move_duration -= frame_duration
 
 class KeyState:
     def __init__(self, key_codes):
@@ -93,10 +68,10 @@ class KeyState:
             self._update(event)
 
     def _update(self, event):
-        self._update_arrow_key(event, pygame.KEYDOWN, True)
-        self._update_arrow_key(event, pygame.KEYUP, False)
+        self._update_key(event, pygame.KEYDOWN, True)
+        self._update_key(event, pygame.KEYUP, False)
 
-    def _update_arrow_key(self, event, event_type, key_state):
+    def _update_key(self, event, event_type, key_state):
         if event.type == event_type and event.key in self.PYGAME_DIRECTIONS:
             self._key_states[self._key_codes.index(event.key)] = key_state
 
