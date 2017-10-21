@@ -22,12 +22,13 @@ x Add sword entity (axis-aligned rectangle only)
         x send messages to conform to camera API
         x Separate camera PODS from Camera interface
     - Implement Tilemap Actor
+        x Improve selective tile blitting
         - separate PODS from actor
     - Anything else that needs to be switched over
     - Profile performance before and after refactor
 - Implement damage
+- Implement actor logging
 - Implement collision detection
-- Game Updates in a Functional Style
 - Determine Other Mechanics
 - Add Networking
 - Map Generation

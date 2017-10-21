@@ -35,3 +35,6 @@ class Bounds:
 
     def right(self):
         return self._position[0] + self._size[0]
+
+    def size(self):
+        return self._size

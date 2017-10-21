@@ -37,18 +37,14 @@ class TileMap:
 
     def blit(self, camera):
         camera_bounds = camera.bounds()
-        def blit_tile(x, y):
-            tile_pos = self._tile_size * np.array([x, y])
-            tile_bounds = bounds.Bounds(tile_pos, np.array([self._tile_size, self._tile_size]))
-            if camera_bounds.intersects(tile_bounds):
+        raw_start = np.floor(camera.position() / self._tile_size).astype(int)
+        start = np.maximum(raw_start, np.array([0, 0]))
+        count = np.ceil(camera.size() / self._tile_size).astype(int)
+        end = np.minimum(start + count, self._size).astype(int)
+        for x in range(start[0], end[0]):
+            for y in range(start[1], end[1]):
+                tile_pos = self._tile_size * np.array([x, y])
                 self._tiles[x][y].blit(camera.screen(), tile_pos - camera.position())
-
-        self._iter_map(blit_tile)
-
-    def _iter_map(self, f):
-        for x in range(self._size[0]):
-            for y in range(self._size[1]):
-                f(x, y)
 
 class DevTileMap(TileMap):
     def __init__(self, *args, **kwargs):
@@ -56,9 +52,9 @@ class DevTileMap(TileMap):
         self._init_map()
 
     def _init_map(self):
-        def set_tile(x, y):
-            if (x + y) % 2 == 0:
-                self.set(np.array([x, y]), Tile(kind=1, tile_size=self._tile_size))
-            else:
-                self.set(np.array([x, y]), Tile(kind=0, tile_size=self._tile_size))
-        self._iter_map(set_tile)
+        for x in range(self._size[0]):
+            for y in range(self._size[1]):
+                if (x + y) % 2 == 0:
+                    self.set(np.array([x, y]), Tile(kind=1, tile_size=self._tile_size))
+                else:
+                    self.set(np.array([x, y]), Tile(kind=0, tile_size=self._tile_size))
