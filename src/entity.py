@@ -51,8 +51,7 @@ class DevEntity(Entity):
         raise Exception("Abstract method! What the hell are you doing?")
 
 class NpcEntity(DevEntity):
-    def __init__(self, position):
-        color = np.array([random.randrange(256), random.randrange(256), random.randrange(256)])
+    def __init__(self, position, color):
         size = np.array([30, 30])
         super().__init__(color, size, position)
 

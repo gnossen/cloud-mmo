@@ -12,7 +12,8 @@ class NpcActor(Actor):
     MAX_BOUNCEBACK_SPEED = 500
 
     def __init__(self, parent, position=None, executor=None):
-        self._entity = NpcEntity(position)
+        self._base_color = np.array([random.randrange(256), random.randrange(256), random.randrange(256)])
+        self._entity = NpcEntity(position, self._base_color)
         self._move_duration = 0.0
         self._direction = CARDINAL_DIRECTIONS["down"]
         self._invincibility_period = 0.0
