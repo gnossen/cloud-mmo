@@ -1,8 +1,7 @@
 import sys
 import pygame
 import numpy as np
-import camera
-import entity
+import camera_actor
 import random
 import tile
 from actor import *
@@ -15,7 +14,7 @@ class RootActor(Actor):
         super().__init__(None, executor)
         self._npcs = [NpcActor(self, np.array([random.randrange(320), random.randrange(320)])) for i in range(7)]
         self._player = PlayerActor(self, np.array([30, 30]))
-        self._camera = camera.Camera(np.array([800, 800]))
+        self._camera = camera_actor.CameraActor(self, np.array([800, 800]))
         self._tilemap = tile.DevTileMap(np.array([20, 20]))
 
     def receive(self, message, sender):
@@ -27,10 +26,11 @@ class RootActor(Actor):
     def update(self, update_msg):
         self.update_external()
         for child in self.children():
-            self.await(self.send(update_msg, child))
+            self.send(update_msg, child)
         player_entity = self.ask(entity_msg.GetEntity(), self._player).result()
-        self._camera.center_on(player_entity.center())
-        self._camera.reset()
+        center_msg = camera_actor.CenterOn(player_entity.center())
+        self.send(center_msg, self._camera)
+        self.send(camera_actor.Reset(), self._camera)
 
     def update_external(self):
         events = pygame.event.get()
@@ -45,7 +45,9 @@ class RootActor(Actor):
 
     def blit(self):
         # how do we handle ordering of child entities for blitting?
-        self._tilemap.blit(self._camera)
+        camera_obj = self.ask(camera_actor.GetCamera(), self._camera).result()
+        self._tilemap.blit(camera_obj)
+        blit_msg = BlitMessage(camera_obj)
         for child in self.children():
-            self.await(self.send(BlitMessage(self._camera), child))
+            self.send(blit_msg, child)
         pygame.display.flip()

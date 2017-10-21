@@ -23,13 +23,11 @@ class GetCamera(CameraMessage):
     pass
 
 class CameraActor(Actor):
-    def __init__(self, size, parent):
-        super.__init__(parent)
+    def __init__(self, parent, size):
+        super().__init__(parent)
         self._camera = Camera(size)
 
     def receive(self, message, sender):
-        if not isinstance(message, CameraMessage):
-            raise Exception("Could not interpret message '{}'".format(message))
         if isinstance(message, GetCamera):
             return self._camera
         elif isinstance(message, MoveTo):
