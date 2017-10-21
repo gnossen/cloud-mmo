@@ -16,8 +16,15 @@ x Add sword entity (axis-aligned rectangle only)
     x Implement Root Actor
     x Implement NPC Actor
     x Implement Player Actor
-    - Implement Sword Actor
+    x Implement Sword Actor
+    x Implement message hoisting
+    - Implement Camera Actor
+        - send messages to conform to camera API
+        - Separate camera PODS from Camera interface
+    - Implement Tilemap Actor
+        - separate PODS from actor
     - Anything else that needs to be switched over
+    - Profile performance before and after refactor
 - Implement damage
 - Implement collision detection
 - Game Updates in a Functional Style

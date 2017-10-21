@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 import pytest
 
 class PrintActor(Actor):
-    def __init__(self, parent, executor):
+    def __init__(self, parent, executor=None):
         self._message = None
         super().__init__(parent, executor)
 
@@ -53,3 +53,33 @@ def test_ask(test_executor):
         ask_actor = AskActor(echo_actor, None, executor=test_executor)
         ask_actor.receive("test", None)
         assert ask_actor._message == "test"
+
+class PropagationMessage:
+    pass
+
+class ParentActor(Actor):
+    def __init__(self, child_cls, executor):
+        super().__init__(None, executor)
+        self._child_actor = child_cls(self)
+        self._message = None
+
+    def receive(self, message, sender):
+        if isinstance(message, PropagationMessage):
+            self.send(message, self._child_actor)
+        else:
+            self._message = message
+
+def test_add_child(test_executor):
+    parent = ParentActor(PrintActor, test_executor)
+    assert len(parent._children) == 1
+    assert isinstance(parent._children[0], PrintActor)
+
+class HoistActor(Actor):
+    def receive(self, msg, sender):
+        if isinstance(msg, PropagationMessage):
+            self.hoist("Got it!")
+
+def test_hoist_message(test_executor):
+    parent = ParentActor(HoistActor, test_executor)
+    parent.receive(PropagationMessage(), None)
+    assert parent._message == "Got it!"

@@ -15,7 +15,13 @@ class Actor(object):
     def send(self, message: 'Message', recipient: 'Actor') -> None:
         return recipient.receive(message, self)
 
-    def receive(self, message: 'Message', sender: 'Actor') -> None:
+    def hoist(self, message: 'Message') -> None:
+        if self._parent is None:
+            msg = "{} has no parent. Cannot hoist message '{}'.".format(self, message)
+            raise RuntimeError(msg)
+        return self._parent.receive(message, self)
+
+    def receive(self, message: 'Message', sender: 'Actor') -> 'Any':
         raise Exception("Abstract method! What the hell are you doing?")
 
     def ask(self, message: 'Message', recipient: 'Actor') -> 'Future[Message]':
