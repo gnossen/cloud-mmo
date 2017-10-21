@@ -12,6 +12,8 @@ class NpcActor(Actor):
         self._move_duration = 0.0
         self._direction = CARDINAL_DIRECTIONS["down"]
         self._invincibility_period = 0.0
+        self._bounceback_duration = 0.0
+        self._bounceback_direction = np.array([0.0, 0.0])
         super().__init__(parent, executor=executor)
 
     def receive(self, msg, sender):
@@ -24,14 +26,26 @@ class NpcActor(Actor):
         elif isinstance(msg, TakeDamageMessage):
             if self._entity.bounds().intersects(msg.bounds) and self._invincibility_period <= 0.0:
                 self._invincibility_period = 1.0
+                self.bounceback(msg.bounds.center())
+
+    def bounceback(self, source):
+        self._bounceback_duration = 0.25
+        self._move_duration = 0.0
+        diff_vec = self._entity.center() - source
+        self._bounceback_direction = diff_vec / np.linalg.norm(diff_vec)
 
     def update(self, frame_duration):
-        if self._move_duration < 0:
+        if self._move_duration <= 0.0:
             self._start_moving()
         if self._invincibility_period > 0.0:
             self._invincibility_period -= frame_duration
-        self._move(frame_duration)
-        self._move_duration -= frame_duration
+        if self._bounceback_duration > 0.0:
+            delta = 320.0 * frame_duration * self._bounceback_direction
+            self._entity.translate(delta)
+            self._bounceback_duration -= frame_duration
+        else:
+            self._move(frame_duration)
+            self._move_duration -= frame_duration
 
     def _possible_directions(self):
         return list(CARDINAL_DIRECTIONS.values()) + ([np.array([0.0, 0.0])] * 5)
@@ -83,7 +97,7 @@ class PlayerActor(Actor):
 
     def _move(self, frame_duration):
         direction = self._dir_key_state.movement_direction()
-        delta = 90.0 * frame_duration * direction
+        delta = 120.0 * frame_duration * direction
         self._entity.translate(delta)
 
     def update(self, update_msg):

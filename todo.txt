@@ -31,7 +31,9 @@ x Refine Actor / Entity System
     x Sword hoists damage message
     x Implement brief invincibility period
     - Implement damage animation
-        - movement
+        x movement
+        - add force to damage message
+        - add skid function to bounceback
         - color
     - player takes damage
     - refactor
