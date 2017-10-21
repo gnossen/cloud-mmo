@@ -29,8 +29,13 @@ x Refine Actor / Entity System
         x 7.4 ms/frame => 5.4 ms/frame :D
 - Implement damage
     x Sword hoists damage message
-    - Implement brief invincibility period
+    x Implement brief invincibility period
     - Implement damage animation
+        - movement
+        - color
+    - player takes damage
+    - refactor
+- Implement unit test harness
 - Implement actor logging
 - Implement collision detection
 - Add utilities to make actors less painful

@@ -11,6 +11,7 @@ class NpcActor(Actor):
         self._entity = NpcEntity(position)
         self._move_duration = 0.0
         self._direction = CARDINAL_DIRECTIONS["down"]
+        self._invincibility_period = 0.0
         super().__init__(parent, executor=executor)
 
     def receive(self, msg, sender):
@@ -21,11 +22,14 @@ class NpcActor(Actor):
         elif isinstance(msg, GetEntity):
             return self._entity
         elif isinstance(msg, TakeDamageMessage):
-            print("NPC took damage!")
+            if self._entity.bounds().intersects(msg.bounds) and self._invincibility_period <= 0.0:
+                self._invincibility_period = 1.0
 
     def update(self, frame_duration):
         if self._move_duration < 0:
             self._start_moving()
+        if self._invincibility_period > 0.0:
+            self._invincibility_period -= frame_duration
         self._move(frame_duration)
         self._move_duration -= frame_duration
 
