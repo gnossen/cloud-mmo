@@ -7,6 +7,7 @@ import random
 import tile
 from actor import *
 from entity_actor import *
+import entity_msg
 from message import *
 
 class RootActor(Actor):
@@ -27,6 +28,8 @@ class RootActor(Actor):
         self.update_external()
         for child in self.children():
             self.await(self.send(update_msg, child))
+        player_entity = self.ask(entity_msg.GetEntity(), self._player).result()
+        self._camera.center_on(player_entity.center())
         self._camera.reset()
 
     def update_external(self):

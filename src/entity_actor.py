@@ -4,6 +4,7 @@ from message import *
 import random
 from directions import *
 from key_state import *
+from entity_msg import *
 
 class NpcActor(Actor):
     def __init__(self, parent, position=None, executor=None):
@@ -17,6 +18,8 @@ class NpcActor(Actor):
             self.update(msg.frame_duration)
         elif isinstance(msg, BlitMessage):
             self._entity.blit(msg.camera)
+        elif isinstance(msg, GetEntity):
+            return self._entity
 
     def update(self, frame_duration):
         if self._move_duration < 0:
@@ -46,12 +49,13 @@ class PlayerActor(Actor):
         if isinstance(msg, UpdateMessage):
             self.update(msg)
         elif isinstance(msg, BlitMessage):
-            msg.camera.center_on(self._entity.center())
             self._entity.blit(msg.camera)
             if self._sword:
                 self.send(msg, self._sword)
         elif isinstance(msg, KeyEventMessage):
             self._update_keys(msg)
+        elif isinstance(msg, GetEntity):
+            return self._entity
 
     def _update_sword(self, update_msg):
         if self._sword is not None and self._sword.dead():
@@ -90,6 +94,8 @@ class SwordActor(Actor):
             self.update(msg)
         elif isinstance(msg, BlitMessage):
             self._entity.blit(msg.camera)
+        elif isinstance(msg, GetEntity):
+            return self._entity
 
     def update(self, msg):
         self._lifetime -= msg.frame_duration
