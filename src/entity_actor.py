@@ -20,6 +20,8 @@ class NpcActor(Actor):
             self._entity.blit(msg.camera)
         elif isinstance(msg, GetEntity):
             return self._entity
+        elif isinstance(msg, TakeDamageMessage):
+            print("NPC took damage!")
 
     def update(self, frame_duration):
         if self._move_duration < 0:
@@ -56,6 +58,8 @@ class PlayerActor(Actor):
             self._update_keys(msg)
         elif isinstance(msg, GetEntity):
             return self._entity
+        elif isinstance(msg, InflictDamageMessage):
+            self.hoist(msg)
 
     def _update_sword(self, update_msg):
         if self._sword is not None and self._sword.dead():
@@ -92,6 +96,7 @@ class SwordActor(Actor):
     def receive(self, msg, sender):
         if isinstance(msg, UpdateMessage):
             self.update(msg)
+            self.hoist(InflictDamageMessage(self._entity.bounds()))
         elif isinstance(msg, BlitMessage):
             self._entity.blit(msg.camera)
         elif isinstance(msg, GetEntity):

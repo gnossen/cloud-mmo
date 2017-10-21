@@ -17,11 +17,15 @@ class RootActor(Actor):
         self._camera = camera_actor.CameraActor(self, np.array([800, 800]))
         self._tilemap = TileMapActor(np.array([20, 20]), self)
 
-    def receive(self, message, sender):
-        if isinstance(message, UpdateMessage):
-            self.update(message)
-        elif isinstance(message, BlitMessage):
+    def receive(self, msg, sender):
+        if isinstance(msg, UpdateMessage):
+            self.update(msg)
+        elif isinstance(msg, BlitMessage):
             self.blit()
+        elif isinstance(msg, InflictDamageMessage):
+            down_msg = msg.to_take_msg()
+            for npc in self._npcs:
+                self.send(down_msg, npc)
 
     def update(self, update_msg):
         self.update_external()
