@@ -12,12 +12,13 @@ class KeyEventMessage:
         self.event = event
 
 class DamageMessage:
-    def __init__(self, bounds):
+    def __init__(self, bounds, force):
         self.bounds = bounds
+        self.force = force
 
 class InflictDamageMessage(DamageMessage):
     def to_take_msg(self):
-        return TakeDamageMessage(self.bounds)
+        return TakeDamageMessage(self.bounds, self.force)
 
 class TakeDamageMessage(DamageMessage):
     pass

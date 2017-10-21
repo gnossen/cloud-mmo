@@ -2,11 +2,15 @@ from actor import Actor
 from entity import *
 from message import *
 import random
+import math
 from directions import *
 from key_state import *
 from entity_msg import *
 
 class NpcActor(Actor):
+    TOTAL_BOUNCEBACK_TIME = 0.25
+    MAX_BOUNCEBACK_SPEED = 500
+
     def __init__(self, parent, position=None, executor=None):
         self._entity = NpcEntity(position)
         self._move_duration = 0.0
@@ -26,13 +30,15 @@ class NpcActor(Actor):
         elif isinstance(msg, TakeDamageMessage):
             if self._entity.bounds().intersects(msg.bounds) and self._invincibility_period <= 0.0:
                 self._invincibility_period = 1.0
-                self.bounceback(msg.bounds.center())
+                self.bounceback(msg.bounds.center(), msg.force)
 
-    def bounceback(self, source):
-        self._bounceback_duration = 0.25
+    def bounceback(self, source, force):
+        self._bounceback_duration = self.TOTAL_BOUNCEBACK_TIME
         self._move_duration = 0.0
         diff_vec = self._entity.center() - source
-        self._bounceback_direction = diff_vec / np.linalg.norm(diff_vec)
+        pos_component = diff_vec / np.linalg.norm(diff_vec)
+        force_dir = force / np.linalg.norm(force)
+        self._bounceback_direction = 0.8 * force_dir  + 0.2 * pos_component
 
     def update(self, frame_duration):
         if self._move_duration <= 0.0:
@@ -40,7 +46,9 @@ class NpcActor(Actor):
         if self._invincibility_period > 0.0:
             self._invincibility_period -= frame_duration
         if self._bounceback_duration > 0.0:
-            delta = 320.0 * frame_duration * self._bounceback_direction
+            coeff = self.MAX_BOUNCEBACK_SPEED / math.sqrt(self.TOTAL_BOUNCEBACK_TIME)
+            speed = coeff * math.sqrt(self._bounceback_duration)
+            delta = speed * frame_duration * self._bounceback_direction
             self._entity.translate(delta)
             self._bounceback_duration -= frame_duration
         else:
@@ -108,13 +116,14 @@ class PlayerActor(Actor):
 class SwordActor(Actor):
     def __init__(self, parent, position, direction, executor=None):
         self._entity = SwordEntity(position, direction)
-        self._lifetime = 0.5
+        self._direction = direction
+        self._lifetime = 0.3
         super().__init__(parent, executor=executor)
 
     def receive(self, msg, sender):
         if isinstance(msg, UpdateMessage):
             self.update(msg)
-            self.hoist(InflictDamageMessage(self._entity.bounds()))
+            self.hoist(InflictDamageMessage(self._entity.bounds(), self._direction))
         elif isinstance(msg, BlitMessage):
             self._entity.blit(msg.camera)
         elif isinstance(msg, GetEntity):

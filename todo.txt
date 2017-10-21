@@ -1,6 +1,5 @@
-- Implement tilemaps
+x Implement tilemaps
     x Solid Colors
-    - Images (later)
 x Implement Camera
     x Programmatic Interface
 x Provide Stable Framerate
@@ -32,9 +31,11 @@ x Refine Actor / Entity System
     x Implement brief invincibility period
     - Implement damage animation
         x movement
-        - add force to damage message
-        - add skid function to bounceback
+        x add force to damage message
+        x add skid function to bounceback
         - color
+        - factor out bounceback functionality for use with player actor
+        - take magnitude of force into account
     - player takes damage
     - refactor
 - Implement unit test harness
@@ -45,3 +46,7 @@ x Refine Actor / Entity System
 - Determine how well our concurrency is working
 - Add Networking
 - Map Generation
+- replace pygame rendering with opengl rendering
+    - add texture infrastructure
+    - adding lighting infrastructure
+- add textures
