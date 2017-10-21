@@ -33,7 +33,7 @@ x Refine Actor / Entity System
         x movement
         x add force to damage message
         x add skid function to bounceback
-        - color
+        x color
         - factor out bounceback functionality for use with player actor
         - take magnitude of force into account
     - player takes damage

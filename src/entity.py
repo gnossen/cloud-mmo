@@ -40,6 +40,9 @@ class DevEntity(Entity):
         super().__init__(size, position)
         self._color = color
 
+    def set_color(self, color):
+        self._color = color
+
     def blit(self, camera):
         screen_pos = self._position - camera.position()
         pygame.draw.rect(camera.screen(),

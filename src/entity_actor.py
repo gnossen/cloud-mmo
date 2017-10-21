@@ -10,6 +10,7 @@ from entity_msg import *
 class NpcActor(Actor):
     TOTAL_BOUNCEBACK_TIME = 0.25
     MAX_BOUNCEBACK_SPEED = 500
+    DAMAGE_COLOR = np.array([255, 0, 0])
 
     def __init__(self, parent, position=None, executor=None):
         self._base_color = np.array([random.randrange(256), random.randrange(256), random.randrange(256)])
@@ -47,12 +48,17 @@ class NpcActor(Actor):
         if self._invincibility_period > 0.0:
             self._invincibility_period -= frame_duration
         if self._bounceback_duration > 0.0:
+            color_diff = self._base_color - self.DAMAGE_COLOR
+            color_coeff = (2.0 / (3.0 * math.sqrt(self.TOTAL_BOUNCEBACK_TIME) * self.TOTAL_BOUNCEBACK_TIME)) * color_diff
+            color = (color_coeff * math.sqrt(self.TOTAL_BOUNCEBACK_TIME - self._bounceback_duration) * (self.TOTAL_BOUNCEBACK_TIME - self._bounceback_duration) + self.DAMAGE_COLOR).astype(int)
+            self._entity.set_color(color)
             coeff = self.MAX_BOUNCEBACK_SPEED / math.sqrt(self.TOTAL_BOUNCEBACK_TIME)
             speed = coeff * math.sqrt(self._bounceback_duration)
             delta = speed * frame_duration * self._bounceback_direction
             self._entity.translate(delta)
             self._bounceback_duration -= frame_duration
         else:
+            self._entity.set_color(self._base_color)
             self._move(frame_duration)
             self._move_duration -= frame_duration
 
