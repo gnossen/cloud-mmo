@@ -12,7 +12,7 @@ x Implement Objects
 x Add other random NPCs
 x Make NPCs move randomly
 x Add sword entity (axis-aligned rectangle only)
-- Refine Actor / Entity System
+x Refine Actor / Entity System
     x Implement Root Actor
     x Implement NPC Actor
     x Implement Player Actor
@@ -25,7 +25,8 @@ x Add sword entity (axis-aligned rectangle only)
         x Improve selective tile blitting
         x separate PODS from actor
     x Anything else that needs to be switched over
-    - Profile performance before and after refactor
+    x Profile performance before and after refactor
+        x 7.4 ms/frame => 5.4 ms/frame :D
 - Implement damage
 - Implement actor logging
 - Implement collision detection
