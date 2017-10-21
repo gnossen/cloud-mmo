@@ -26,5 +26,8 @@ class Camera:
     def position(self):
         return self._position.astype(int)
 
+    def size(self):
+        return self._size.astype(int)
+
     def bounds(self):
         return bounds.Bounds(self.position(), self._size)

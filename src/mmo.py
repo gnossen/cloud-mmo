@@ -1,11 +1,7 @@
-import sys
-import pygame
-import tile
-import numpy as np
-import camera
 import time
-import entity
-import random
+from concurrent.futures import ThreadPoolExecutor
+from message import *
+from root_actor import RootActor
 
 class timed_loop:
     def __init__(self, fps):
@@ -22,33 +18,12 @@ class timed_loop:
             frame_duration = time.time() - frame_start
             time.sleep(max(0, desired_period - elapsed_time))
 
-cam = camera.Camera(np.array([800, 800]))
-tilemap = tile.DevTileMap(np.array([20, 20]))
-player = entity.PlayerEntity(np.array([30, 30]))
+executor = ThreadPoolExecutor(max_workers=4)
+root_actor = RootActor(executor)
 
-npcs = []
-for _ in range(7):
-    position = np.array([random.randrange(320), random.randrange(320)])
-    npc = entity.NpcEntity(position)
-    npcs.append(npc)
-
-keys = [False for _ in range(512)]
 @timed_loop(60.0)
 def main(elapsed_time, frame_duration):
-    events = pygame.event.get()
-    for event in events:
-        if event.type == pygame.QUIT:
-            sys.exit(0)
-
-    player.update(elapsed_time, frame_duration, events)
-    cam.center_on(player.center())
-
-    cam.reset()
-    tilemap.blit(cam)
-    for npc in npcs:
-        npc.update(elapsed_time, frame_duration, events)
-        npc.blit(cam)
-    player.blit(cam)
-    pygame.display.flip()
+    root_actor.receive(UpdateMessage(elapsed_time, frame_duration), None)
+    root_actor.receive(BlitMessage(None), None)
 
 main()
