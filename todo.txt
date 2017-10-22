@@ -29,16 +29,15 @@ x Refine Actor / Entity System
 - Implement damage
     x Sword hoists damage message
     x Implement brief invincibility period
-    - Implement damage animation
+    x Implement damage animation
         x movement
         x add force to damage message
         x add skid function to bounceback
         x color
     x factor out bounceback functionality for use with player actor
-    - player takes damage
+    x player takes damage
+    x NPCs knock into each other
     - take magnitude of force into account
-    - NPCs knock into each other
-        - figure out how to test easily
     - refactor
 - Implement unit test harness
 - Implement actor logging

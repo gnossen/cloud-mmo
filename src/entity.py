@@ -61,14 +61,7 @@ class NpcEntity(DevEntity):
 class PlayerEntity(DevEntity):
     def __init__(self, position):
         super().__init__((63, 127, 255), np.array([30, 30]), position)
-        self._dir_key_state = DirectionKeyState()
-        self._sword_entity = None
 
 class SwordEntity(DevEntity):
-    def __init__(self, position, direction):
-        size = None
-        if direction[0] == 0.0:
-            size = np.array([10, 25])
-        else:
-            size = np.array([25, 10])
-        super().__init__((255, 255, 255), size, position - 0.5 * size)
+    def __init__(self, position, size):
+        super().__init__((255, 255, 255), size, position)

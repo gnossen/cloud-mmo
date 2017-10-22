@@ -31,7 +31,7 @@ class EntityActor(Actor):
         if isinstance(msg, GetEntity):
             return self._entity
         if isinstance(msg, TakeDamageMessage):
-            if self._entity.bounds().intersects(msg.bounds) and self._invincibility_period <= 0.0:
+            if self not in msg.exclude and self._entity.bounds().intersects(msg.bounds) and self._invincibility_period <= 0.0:
                 self._invincibility_period = 1.0
                 self.bounceback(msg.bounds.center(), msg.force)
         if isinstance(msg, InflictDamageMessage):
@@ -42,8 +42,11 @@ class EntityActor(Actor):
         self._move_duration = 0.0
         diff_vec = self._entity.center() - source
         pos_component = diff_vec / np.linalg.norm(diff_vec)
-        force_dir = force / np.linalg.norm(force)
-        self._bounceback_direction = 0.8 * force_dir  + 0.2 * pos_component
+        if np.count_nonzero(force) == 0:
+            self._bounceback_direction = pos_component
+        else:
+            force_dir = force / np.linalg.norm(force)
+            self._bounceback_direction = 0.8 * force_dir  + 0.2 * pos_component
 
     def _update_color(self, update_msg):
         color_diff = self._base_color - self.DAMAGE_COLOR
@@ -86,6 +89,10 @@ class NpcActor(EntityActor):
             self._start_moving()
         self._move(update_msg.frame_duration)
         self._move_duration -= update_msg.frame_duration
+        force_direction = np.array([0.0, 0.0])
+        if self._bounceback_duration > 0:
+            force_direction = self._bounceback_direction
+        self.hoist(InflictDamageMessage(self._entity.bounds(), force_direction, [self]))
 
     def blit(self, blit_msg):
         self._entity.blit(blit_msg.camera)
@@ -101,26 +108,22 @@ class NpcActor(EntityActor):
         delta = 40.0 * frame_duration * self._direction
         self._entity.translate(delta)
 
-class PlayerActor(Actor):
+class PlayerActor(EntityActor):
     def __init__(self, parent, position, executor=None):
-        self._entity = PlayerEntity(position)
+        entity = PlayerEntity(position)
         self._dir_key_state = DirectionKeyState()
         self._sword = None
-        super().__init__(parent, executor=executor)
+        super().__init__(parent, entity._color, entity, executor=executor)
 
     def receive(self, msg, sender):
-        if isinstance(msg, UpdateMessage):
-            self.update(msg)
-        elif isinstance(msg, BlitMessage):
-            self._entity.blit(msg.camera)
-            if self._sword:
-                self.send(msg, self._sword)
-        elif isinstance(msg, KeyEventMessage):
+        if isinstance(msg, KeyEventMessage):
             self._update_keys(msg)
-        elif isinstance(msg, GetEntity):
-            return self._entity
-        elif isinstance(msg, InflictDamageMessage):
-            self.hoist(msg)
+        return super().receive(msg, sender)
+
+    def blit(self, blit_msg):
+        self._entity.blit(blit_msg.camera)
+        if self._sword:
+            self.send(blit_msg, self._sword)
 
     def _update_sword(self, update_msg):
         if self._sword is not None and self._sword.dead():
@@ -136,7 +139,7 @@ class PlayerActor(Actor):
 
     def _instantiate_sword(self):
         facing_direction = self._dir_key_state.facing_direction()
-        self._sword = SwordActor(self, self._entity.center() + 20 * facing_direction, facing_direction)
+        self._sword = SwordActor(self, 20 * facing_direction, facing_direction)
 
     def _move(self, frame_duration):
         direction = self._dir_key_state.movement_direction()
@@ -144,21 +147,32 @@ class PlayerActor(Actor):
         self._entity.translate(delta)
 
     def update(self, update_msg):
+        super().update(update_msg)
         self._update_sword(update_msg)
         if not self._sword:
             self._move(update_msg.frame_duration)
 
 class SwordActor(Actor):
-    def __init__(self, parent, position, direction, executor=None):
-        self._entity = SwordEntity(position, direction)
+    def __init__(self, parent, offset, direction, executor=None):
+        super().__init__(parent, executor=executor)
+        self._size = None
+        if direction[0] == 0.0:
+            self._size = np.array([10, 25])
+        else:
+            self._size = np.array([25, 10])
+        self._offset = offset
+        position = self.get_position()
+        self._entity = SwordEntity(position, self._size)
         self._direction = direction
         self._lifetime = 0.3
-        super().__init__(parent, executor=executor)
+
+    def get_position(self):
+        return self.ask(GetEntity(), self.parent()).result().center() + self._offset - 0.5 * self._size
 
     def receive(self, msg, sender):
         if isinstance(msg, UpdateMessage):
             self.update(msg)
-            self.hoist(InflictDamageMessage(self._entity.bounds(), self._direction))
+            self.hoist(InflictDamageMessage(self._entity.bounds(), self._direction, [self.parent()]))
         elif isinstance(msg, BlitMessage):
             self._entity.blit(msg.camera)
         elif isinstance(msg, GetEntity):
@@ -166,6 +180,7 @@ class SwordActor(Actor):
 
     def update(self, msg):
         self._lifetime -= msg.frame_duration
+        self._entity.move_to(self.get_position())
 
     def dead(self):
         return self._lifetime <= 0.0

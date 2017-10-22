@@ -24,8 +24,8 @@ class RootActor(Actor):
             self.blit()
         elif isinstance(msg, InflictDamageMessage):
             down_msg = msg.to_take_msg()
-            for npc in self._npcs:
-                self.send(down_msg, npc)
+            for child in self._children:
+                self.send(down_msg, child)
 
     def update(self, update_msg):
         self.update_external()
