@@ -44,11 +44,12 @@ class DevEntity(Entity):
         self._color = color
 
     def blit(self, camera):
-        screen_pos = self._position - camera.position()
-        pygame.draw.rect(camera.screen(),
-                         self._color,
-                         (screen_pos[0], screen_pos[1], self._size[0], self._size[1]),
-                         0)
+        if self.bounds().intersects(camera.bounds()):
+            screen_pos = self._position - camera.position()
+            pygame.draw.rect(camera.screen(),
+                             self._color,
+                             (screen_pos[0], screen_pos[1], self._size[0], self._size[1]),
+                             0)
 
     def update(self, elapsed_time, keys):
         raise Exception("Abstract method! What the hell are you doing?")
