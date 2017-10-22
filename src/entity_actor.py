@@ -45,18 +45,26 @@ class EntityActor(Actor):
         force_dir = force / np.linalg.norm(force)
         self._bounceback_direction = 0.8 * force_dir  + 0.2 * pos_component
 
+    def _update_color(self, update_msg):
+        color_diff = self._base_color - self.DAMAGE_COLOR
+        color_coeff = (2.0 / (3.0 * math.sqrt(self.TOTAL_BOUNCEBACK_TIME) * self.TOTAL_BOUNCEBACK_TIME)) * color_diff
+        color = (color_coeff * math.sqrt(self.TOTAL_BOUNCEBACK_TIME - self._bounceback_duration) * \
+                    (self.TOTAL_BOUNCEBACK_TIME - self._bounceback_duration) + \
+                    self.DAMAGE_COLOR).astype(int)
+        self._entity.set_color(color)
+
+    def _update_position(self, update_msg):
+        coeff = self.MAX_BOUNCEBACK_SPEED / math.sqrt(self.TOTAL_BOUNCEBACK_TIME)
+        speed = coeff * math.sqrt(self._bounceback_duration)
+        delta = speed * update_msg.frame_duration * self._bounceback_direction
+        self._entity.translate(delta)
+
     def update(self, update_msg):
         if self._invincibility_period > 0.0:
             self._invincibility_period -= update_msg.frame_duration
         if self._bounceback_duration > 0.0:
-            color_diff = self._base_color - self.DAMAGE_COLOR
-            color_coeff = (2.0 / (3.0 * math.sqrt(self.TOTAL_BOUNCEBACK_TIME) * self.TOTAL_BOUNCEBACK_TIME)) * color_diff
-            color = (color_coeff * math.sqrt(self.TOTAL_BOUNCEBACK_TIME - self._bounceback_duration) * (self.TOTAL_BOUNCEBACK_TIME - self._bounceback_duration) + self.DAMAGE_COLOR).astype(int)
-            self._entity.set_color(color)
-            coeff = self.MAX_BOUNCEBACK_SPEED / math.sqrt(self.TOTAL_BOUNCEBACK_TIME)
-            speed = coeff * math.sqrt(self._bounceback_duration)
-            delta = speed * update_msg.frame_duration * self._bounceback_direction
-            self._entity.translate(delta)
+            self._update_color(update_msg)
+            self._update_position(update_msg)
             self._bounceback_duration -= update_msg.frame_duration
         else:
             self._entity.set_color(self._base_color)
