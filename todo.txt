@@ -34,9 +34,11 @@ x Refine Actor / Entity System
         x add force to damage message
         x add skid function to bounceback
         x color
-        - factor out bounceback functionality for use with player actor
-        - take magnitude of force into account
+    x factor out bounceback functionality for use with player actor
     - player takes damage
+    - take magnitude of force into account
+    - NPCs knock into each other
+        - figure out how to test easily
     - refactor
 - Implement unit test harness
 - Implement actor logging

@@ -7,32 +7,35 @@ from directions import *
 from key_state import *
 from entity_msg import *
 
-class NpcActor(Actor):
+class EntityActor(Actor):
     TOTAL_BOUNCEBACK_TIME = 0.25
     MAX_BOUNCEBACK_SPEED = 500
     DAMAGE_COLOR = np.array([255, 0, 0])
 
-    def __init__(self, parent, position=None, executor=None):
-        self._base_color = np.array([random.randrange(256), random.randrange(256), random.randrange(256)])
-        self._entity = NpcEntity(position, self._base_color)
-        self._move_duration = 0.0
-        self._direction = CARDINAL_DIRECTIONS["down"]
+    def __init__(self, parent, color, entity, executor=None):
+        super().__init__(parent, executor=executor)
+        self._base_color = color
+        self._entity = entity
         self._invincibility_period = 0.0
         self._bounceback_duration = 0.0
         self._bounceback_direction = np.array([0.0, 0.0])
-        super().__init__(parent, executor=executor)
+
+    def entity(self):
+        raise Exception("Abstract method!")
 
     def receive(self, msg, sender):
         if isinstance(msg, UpdateMessage):
-            self.update(msg.frame_duration)
-        elif isinstance(msg, BlitMessage):
-            self._entity.blit(msg.camera)
-        elif isinstance(msg, GetEntity):
+            self.update(msg)
+        if isinstance(msg, BlitMessage):
+            self.blit(msg)
+        if isinstance(msg, GetEntity):
             return self._entity
-        elif isinstance(msg, TakeDamageMessage):
+        if isinstance(msg, TakeDamageMessage):
             if self._entity.bounds().intersects(msg.bounds) and self._invincibility_period <= 0.0:
                 self._invincibility_period = 1.0
                 self.bounceback(msg.bounds.center(), msg.force)
+        if isinstance(msg, InflictDamageMessage):
+            self.hoist(msg)
 
     def bounceback(self, source, force):
         self._bounceback_duration = self.TOTAL_BOUNCEBACK_TIME
@@ -42,11 +45,9 @@ class NpcActor(Actor):
         force_dir = force / np.linalg.norm(force)
         self._bounceback_direction = 0.8 * force_dir  + 0.2 * pos_component
 
-    def update(self, frame_duration):
-        if self._move_duration <= 0.0:
-            self._start_moving()
+    def update(self, update_msg):
         if self._invincibility_period > 0.0:
-            self._invincibility_period -= frame_duration
+            self._invincibility_period -= update_msg.frame_duration
         if self._bounceback_duration > 0.0:
             color_diff = self._base_color - self.DAMAGE_COLOR
             color_coeff = (2.0 / (3.0 * math.sqrt(self.TOTAL_BOUNCEBACK_TIME) * self.TOTAL_BOUNCEBACK_TIME)) * color_diff
@@ -54,13 +55,32 @@ class NpcActor(Actor):
             self._entity.set_color(color)
             coeff = self.MAX_BOUNCEBACK_SPEED / math.sqrt(self.TOTAL_BOUNCEBACK_TIME)
             speed = coeff * math.sqrt(self._bounceback_duration)
-            delta = speed * frame_duration * self._bounceback_direction
+            delta = speed * update_msg.frame_duration * self._bounceback_direction
             self._entity.translate(delta)
-            self._bounceback_duration -= frame_duration
+            self._bounceback_duration -= update_msg.frame_duration
         else:
             self._entity.set_color(self._base_color)
-            self._move(frame_duration)
-            self._move_duration -= frame_duration
+
+    def blit(self, blit_msg):
+        raise Exception("Abstract method!")
+
+class NpcActor(EntityActor):
+    def __init__(self, parent, position=None, executor=None):
+        base_color = np.array([random.randrange(256), random.randrange(256), random.randrange(256)])
+        entity = NpcEntity(position, base_color)
+        super().__init__(parent, base_color, entity, executor=executor)
+        self._move_duration = 0.0
+        self._direction = CARDINAL_DIRECTIONS["down"]
+
+    def update(self, update_msg):
+        super().update(update_msg)
+        if self._move_duration <= 0.0:
+            self._start_moving()
+        self._move(update_msg.frame_duration)
+        self._move_duration -= update_msg.frame_duration
+
+    def blit(self, blit_msg):
+        self._entity.blit(blit_msg.camera)
 
     def _possible_directions(self):
         return list(CARDINAL_DIRECTIONS.values()) + ([np.array([0.0, 0.0])] * 5)
