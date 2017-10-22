@@ -8,8 +8,6 @@ from key_state import *
 from entity_msg import *
 
 class EntityActor(Actor):
-    TOTAL_BOUNCEBACK_TIME = 0.25
-    MAX_BOUNCEBACK_SPEED = 500
     DAMAGE_COLOR = np.array([255, 0, 0])
 
     def __init__(self, parent, color, entity, executor=None):
@@ -19,6 +17,8 @@ class EntityActor(Actor):
         self._invincibility_period = 0.0
         self._bounceback_duration = 0.0
         self._bounceback_direction = np.array([0.0, 0.0])
+        self._total_bounceback_time = 0.25
+        self._max_bounceback_speed = 500
 
     def entity(self):
         raise Exception("Abstract method!")
@@ -33,31 +33,32 @@ class EntityActor(Actor):
         if isinstance(msg, TakeDamageMessage):
             if self not in msg.exclude and self._entity.bounds().intersects(msg.bounds) and self._invincibility_period <= 0.0:
                 self._invincibility_period = 1.0
-                self.bounceback(msg.bounds.center(), msg.force)
+                self.bounceback(msg.bounds.center(), msg.force_dir, msg.force_mag)
         if isinstance(msg, InflictDamageMessage):
             self.hoist(msg)
 
-    def bounceback(self, source, force):
-        self._bounceback_duration = self.TOTAL_BOUNCEBACK_TIME
+    def bounceback(self, source, force_dir, force_mag):
+        self._max_bounceback_speed = 10 * force_mag
+        self._bounceback_duration = self._total_bounceback_time
         self._move_duration = 0.0
         diff_vec = self._entity.center() - source
         pos_component = diff_vec / np.linalg.norm(diff_vec)
-        if np.count_nonzero(force) == 0:
+        if np.count_nonzero(force_dir) == 0:
             self._bounceback_direction = pos_component
         else:
-            force_dir = force / np.linalg.norm(force)
-            self._bounceback_direction = 0.8 * force_dir  + 0.2 * pos_component
+            unit_force = force_dir / np.linalg.norm(force_dir)
+            self._bounceback_direction = 0.8 * unit_force  + 0.2 * pos_component
 
     def _update_color(self, update_msg):
         color_diff = self._base_color - self.DAMAGE_COLOR
-        color_coeff = (2.0 / (3.0 * math.sqrt(self.TOTAL_BOUNCEBACK_TIME) * self.TOTAL_BOUNCEBACK_TIME)) * color_diff
-        color = (color_coeff * math.sqrt(self.TOTAL_BOUNCEBACK_TIME - self._bounceback_duration) * \
-                    (self.TOTAL_BOUNCEBACK_TIME - self._bounceback_duration) + \
+        color_coeff = (2.0 / (3.0 * math.sqrt(self._total_bounceback_time) * self._total_bounceback_time)) * color_diff
+        color = (color_coeff * math.sqrt(self._total_bounceback_time - self._bounceback_duration) * \
+                    (self._total_bounceback_time - self._bounceback_duration) + \
                     self.DAMAGE_COLOR).astype(int)
         self._entity.set_color(color)
 
     def _update_position(self, update_msg):
-        coeff = self.MAX_BOUNCEBACK_SPEED / math.sqrt(self.TOTAL_BOUNCEBACK_TIME)
+        coeff = self._max_bounceback_speed / math.sqrt(self._total_bounceback_time)
         speed = coeff * math.sqrt(self._bounceback_duration)
         delta = speed * update_msg.frame_duration * self._bounceback_direction
         self._entity.translate(delta)
@@ -92,7 +93,7 @@ class NpcActor(EntityActor):
         force_direction = np.array([0.0, 0.0])
         if self._bounceback_duration > 0:
             force_direction = self._bounceback_direction
-        self.hoist(InflictDamageMessage(self._entity.bounds(), force_direction, [self]))
+        self.hoist(InflictDamageMessage(self._entity.bounds(), force_direction, 50.0, [self]))
 
     def blit(self, blit_msg):
         self._entity.blit(blit_msg.camera)
@@ -172,7 +173,7 @@ class SwordActor(Actor):
     def receive(self, msg, sender):
         if isinstance(msg, UpdateMessage):
             self.update(msg)
-            self.hoist(InflictDamageMessage(self._entity.bounds(), self._direction, [self.parent()]))
+            self.hoist(InflictDamageMessage(self._entity.bounds(), self._direction, 50.0, [self.parent()]))
         elif isinstance(msg, BlitMessage):
             self._entity.blit(msg.camera)
         elif isinstance(msg, GetEntity):
