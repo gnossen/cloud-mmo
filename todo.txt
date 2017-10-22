@@ -37,14 +37,16 @@ x Refine Actor / Entity System
     x factor out bounceback functionality for use with player actor
     x player takes damage
     x NPCs knock into each other
-    - take magnitude of force into account
+    x take magnitude of force into account
+    x give different strengths to different enemies
     - refactor
+- Implement Basic NPC AI
+- Determine how well our concurrency is working
 - Implement unit test harness
 - Implement actor logging
 - Implement collision detection
 - Add utilities to make actors less painful
 - Determine Other Mechanics
-- Determine how well our concurrency is working
 - Add Networking
 - Map Generation
 - replace pygame rendering with opengl rendering

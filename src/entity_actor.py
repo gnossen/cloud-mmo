@@ -10,8 +10,9 @@ from entity_msg import *
 class EntityActor(Actor):
     DAMAGE_COLOR = np.array([255, 0, 0])
 
-    def __init__(self, parent, color, entity, executor=None):
+    def __init__(self, parent, color, entity, mass, executor=None):
         super().__init__(parent, executor=executor)
+        self._mass = mass
         self._base_color = color
         self._entity = entity
         self._invincibility_period = 0.0
@@ -38,7 +39,7 @@ class EntityActor(Actor):
             self.hoist(msg)
 
     def bounceback(self, source, force_dir, force_mag):
-        self._max_bounceback_speed = 10 * force_mag
+        self._max_bounceback_speed = 500 * force_mag / self._mass
         self._bounceback_duration = self._total_bounceback_time
         self._move_duration = 0.0
         diff_vec = self._entity.center() - source
@@ -79,8 +80,9 @@ class EntityActor(Actor):
 class NpcActor(EntityActor):
     def __init__(self, parent, position=None, executor=None):
         base_color = np.array([random.randrange(256), random.randrange(256), random.randrange(256)])
+        mass = random.gauss(50.0, 10.0)
         entity = NpcEntity(position, base_color)
-        super().__init__(parent, base_color, entity, executor=executor)
+        super().__init__(parent, base_color, entity, mass, executor=executor)
         self._move_duration = 0.0
         self._direction = CARDINAL_DIRECTIONS["down"]
 
@@ -93,7 +95,7 @@ class NpcActor(EntityActor):
         force_direction = np.array([0.0, 0.0])
         if self._bounceback_duration > 0:
             force_direction = self._bounceback_direction
-        self.hoist(InflictDamageMessage(self._entity.bounds(), force_direction, 50.0, [self]))
+        self.hoist(InflictDamageMessage(self._entity.bounds(), force_direction, self._mass, [self]))
 
     def blit(self, blit_msg):
         self._entity.blit(blit_msg.camera)
@@ -114,7 +116,7 @@ class PlayerActor(EntityActor):
         entity = PlayerEntity(position)
         self._dir_key_state = DirectionKeyState()
         self._sword = None
-        super().__init__(parent, entity._color, entity, executor=executor)
+        super().__init__(parent, entity._color, entity, 50.0, executor=executor)
 
     def receive(self, msg, sender):
         if isinstance(msg, KeyEventMessage):
