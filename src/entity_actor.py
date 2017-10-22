@@ -149,7 +149,7 @@ class PlayerActor(EntityActor):
     def update(self, update_msg):
         super().update(update_msg)
         self._update_sword(update_msg)
-        if not self._sword:
+        if not self._sword and self._bounceback_duration <= 0.0:
             self._move(update_msg.frame_duration)
 
 class SwordActor(Actor):
