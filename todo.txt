@@ -41,6 +41,11 @@ x Refine Actor / Entity System
     x give different strengths to different enemies
     - refactor
 - Implement Basic NPC AI
+    - when within a certain range, move toward hero
+    - avoid other NPCs
+- Give weapons to NPCs
+    - swords
+    - projectiles
 - Determine how well our concurrency is working
 - Implement unit test harness
 - Implement actor logging

@@ -8,7 +8,7 @@ from key_state import *
 from entity_msg import *
 
 class EntityActor(Actor):
-    DAMAGE_COLOR = np.array([255, 0, 0])
+    DAMAGE_COLOR = np.array([255, 255, 255])
 
     def __init__(self, parent, color, entity, mass, executor=None):
         super().__init__(parent, executor=executor)
@@ -80,7 +80,10 @@ class EntityActor(Actor):
 class NpcActor(EntityActor):
     def __init__(self, parent, position=None, executor=None):
         base_color = np.array([random.randrange(256), random.randrange(256), random.randrange(256)])
-        mass = random.gauss(50.0, 10.0)
+        self._mass_dist = min(max(random.gauss(1.0, 0.25), 0.0), 2.0)
+        # mean = 40, std = 25
+        self._speed = self._mass_dist * 100 - 60.0
+        mass = self._mass_dist * 40 + 10.0
         entity = NpcEntity(position, base_color)
         super().__init__(parent, base_color, entity, mass, executor=executor)
         self._move_duration = 0.0
@@ -108,7 +111,7 @@ class NpcActor(EntityActor):
         self._move_duration = random.gauss(3.0, 1.0)
 
     def _move(self, frame_duration):
-        delta = 40.0 * frame_duration * self._direction
+        delta = self._speed * frame_duration * self._direction
         self._entity.translate(delta)
 
 class PlayerActor(EntityActor):
