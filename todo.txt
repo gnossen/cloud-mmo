@@ -1,6 +1,5 @@
-- Implement tilemaps
+x Implement tilemaps
     x Solid Colors
-    - Images (later)
 x Implement Camera
     x Programmatic Interface
 x Provide Stable Framerate
@@ -28,10 +27,34 @@ x Refine Actor / Entity System
     x Profile performance before and after refactor
         x 7.4 ms/frame => 5.4 ms/frame :D
 - Implement damage
+    x Sword hoists damage message
+    x Implement brief invincibility period
+    x Implement damage animation
+        x movement
+        x add force to damage message
+        x add skid function to bounceback
+        x color
+    x factor out bounceback functionality for use with player actor
+    x player takes damage
+    x NPCs knock into each other
+    x take magnitude of force into account
+    x give different strengths to different enemies
+    - refactor
+- Implement Basic NPC AI
+    - when within a certain range, move toward hero
+    - avoid other NPCs
+- Give weapons to NPCs
+    - swords
+    - projectiles
+- Determine how well our concurrency is working
+- Implement unit test harness
 - Implement actor logging
 - Implement collision detection
 - Add utilities to make actors less painful
 - Determine Other Mechanics
-- Determine how well our concurrency is working
 - Add Networking
 - Map Generation
+- replace pygame rendering with opengl rendering
+    - add texture infrastructure
+    - adding lighting infrastructure
+- add textures

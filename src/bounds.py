@@ -38,3 +38,6 @@ class Bounds:
 
     def size(self):
         return self._size
+
+    def center(self):
+        return self._position + 0.5 * self._size

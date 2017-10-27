@@ -40,33 +40,29 @@ class DevEntity(Entity):
         super().__init__(size, position)
         self._color = color
 
+    def set_color(self, color):
+        self._color = color
+
     def blit(self, camera):
-        screen_pos = self._position - camera.position()
-        pygame.draw.rect(camera.screen(),
-                         self._color,
-                         (screen_pos[0], screen_pos[1], self._size[0], self._size[1]),
-                         0)
+        if self.bounds().intersects(camera.bounds()):
+            screen_pos = self._position - camera.position()
+            pygame.draw.rect(camera.screen(),
+                             self._color,
+                             (screen_pos[0], screen_pos[1], self._size[0], self._size[1]),
+                             0)
 
     def update(self, elapsed_time, keys):
         raise Exception("Abstract method! What the hell are you doing?")
 
 class NpcEntity(DevEntity):
-    def __init__(self, position):
-        color = np.array([random.randrange(256), random.randrange(256), random.randrange(256)])
+    def __init__(self, position, color):
         size = np.array([30, 30])
         super().__init__(color, size, position)
 
 class PlayerEntity(DevEntity):
     def __init__(self, position):
         super().__init__((63, 127, 255), np.array([30, 30]), position)
-        self._dir_key_state = DirectionKeyState()
-        self._sword_entity = None
 
 class SwordEntity(DevEntity):
-    def __init__(self, position, direction):
-        size = None
-        if direction[0] == 0.0:
-            size = np.array([10, 25])
-        else:
-            size = np.array([25, 10])
-        super().__init__((255, 255, 255), size, position - 0.5 * size)
+    def __init__(self, position, size):
+        super().__init__((255, 255, 255), size, position)
